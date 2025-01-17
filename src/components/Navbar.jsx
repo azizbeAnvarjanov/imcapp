@@ -28,7 +28,7 @@ const Navbar = async () => {
             <div className="flex items-center gap-5">
               <div className="flex items-center gap-2">
                 <div className="border w-[60px] h-[60px] rounded-full overflow-hidden shadow-md relative">
-                  {user.picture ? (
+                  {user?.picture ? (
                     <>
                       <Image
                         className="object-cover"
@@ -42,9 +42,9 @@ const Navbar = async () => {
                   )}
                 </div>
                 <div className="font-bold text-2xl">
-                  {user.family_name} {user.given_name}
+                  {user?.family_name} {user?.given_name}
                   <p className="text-gray-500 !font-light text-sm">
-                    {user.email}
+                    {user?.email}
                   </p>
                 </div>
               </div>
