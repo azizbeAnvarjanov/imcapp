@@ -34,13 +34,6 @@ const MyAttendess = ({ currentUser }) => {
 
   const tableRef = useRef();
 
-  const formatTime = (totalSeconds) => {
-    const hours = Math.floor(totalSeconds / 3600); // Soatlar
-    const minutes = Math.floor((totalSeconds % 3600) / 60); // Qolgan daqiqalar
-    const seconds = totalSeconds % 60; // Qolgan sekundlar
-
-    return `${hours}:${minutes}:${seconds}`;
-  };
 
   const months = [
     "Yanvar",
@@ -141,6 +134,44 @@ const MyAttendess = ({ currentUser }) => {
     window.print();
     document.body.innerHTML = originalContent;
     window.location.reload();
+  };
+
+  const formatTime = (totalSeconds) => {
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+    return `${hours} soat ${minutes} daqiqa ${seconds} soniya`;
+  };
+
+  const vaqtniTekshir = (grafikVaqti, kelganVaqti) => {
+    if (!kelganVaqti) {
+      return {
+        status: "Hali kelmadi",
+        bgColor: "",
+      };
+    }
+    const [grafikSoat, grafikDaqiqa] = grafikVaqti.split(":").map(Number);
+    const [kelganSoat, kelganDaqiqa] = kelganVaqti.split(":").map(Number);
+    const grafikVaqtMinutlarda = grafikSoat * 60 + grafikDaqiqa;
+    const kelganVaqtMinutlarda = kelganSoat * 60 + kelganDaqiqa;
+    const farq = kelganVaqtMinutlarda - grafikVaqtMinutlarda;
+
+    if (farq > 0) {
+      return {
+        status: formatTime(farq * 60),
+        bgColor: "bg-red-500",
+      };
+    } else if (farq < 0) {
+      return {
+        status: `${Math.abs(farq)} daqiqa erta keldi.`,
+        bgColor: "bg-green-500",
+      };
+    } else {
+      return {
+        status: `O'z vaqtida keldi.`,
+        bgColor: "",
+      };
+    }
   };
 
   return (

@@ -10,6 +10,7 @@ import {
   where,
   onSnapshot,
 } from "firebase/firestore";
+import GetUserWorkSchedule from "./GetUserWorkSchedule";
 
 import withIpCheck from "../app/hoc/withIpCheck";
 import { db } from "../app/firebase";
@@ -22,6 +23,8 @@ const MainPage = ({ user, role }) => {
   const [isDepartDisabled, setIsDepartDisabled] = useState(false);
   const [todayStatus, setTodayStatus] = useState(null);
   const [currentTime, setCurrentTime] = useState("");
+  const [defaultEndTime, setDefaultEndTime] = useState("");
+  const [defaultStartTime, setDefaultStartTime] = useState("");
 
   const handleArrive = async () => {
     setLoading(true);
@@ -164,20 +167,73 @@ const MainPage = ({ user, role }) => {
       now.toLocaleTimeString("en-US", { hour12: false }) // HH:MM:SS format
     );
   };
+  const getuserTimes = async () => {
+    const data = await GetUserWorkSchedule(user.id);
+    setDefaultEndTime(data?.defaultEndTime);
+    setDefaultStartTime(data?.defaultStartTime);
+  };
 
   useEffect(() => {
+    getuserTimes();
     checkButtonState();
     updateCurrentTime();
     const interval = setInterval(updateCurrentTime, 1000);
     return () => clearInterval(interval);
   }, [user]);
+  const formatTime = (totalSeconds) => {
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+    return `${hours} soat ${minutes} daqiqa ${seconds} soniya`;
+  };
 
+  const vaqtniTekshir = (grafikVaqti, kelganVaqti) => {
+    if (!kelganVaqti) {
+      return {
+        status: "Hali kelmadi",
+        bgColor: "",
+      };
+    }
+    const [grafikSoat, grafikDaqiqa] = grafikVaqti.split(":").map(Number);
+    const [kelganSoat, kelganDaqiqa] = kelganVaqti.split(":").map(Number);
+    const grafikVaqtMinutlarda = grafikSoat * 60 + grafikDaqiqa;
+    const kelganVaqtMinutlarda = kelganSoat * 60 + kelganDaqiqa;
+    const farq = kelganVaqtMinutlarda - grafikVaqtMinutlarda;
+
+    if (farq > 0) {
+      return {
+        status: `${formatTime(farq * 60)} kech qoldiz`,
+        color: "text-red-500",
+      };
+    } else if (farq < 0) {
+      return {
+        status: `${Math.abs(farq)} daqiqa erta keldi.`,
+        color: "text-green-500",
+      };
+    } else {
+      return {
+        status: `O'z vaqtida keldi.`,
+        color: "text-green-500",
+      };
+    }
+  };
+
+  const arrivalStatus = vaqtniTekshir(
+    defaultStartTime || "09:00",
+    todayStatus?.arrivel_time || null
+  );
   return (
     <div className="p-10">
       <h1 className="text-xl font-bold mb-4">Hozirgi vaqt: {currentTime}</h1>
-
       {todayStatus && (
         <div className="mb-4">
+          <p>
+            <strong>Statusi:</strong>{" "}
+            <span className={arrivalStatus.color}>{arrivalStatus.status}</span>
+          </p>
+          <p>
+            <strong>Ish grafigi:</strong> {defaultStartTime} - {defaultEndTime}
+          </p>
           <p>
             <strong>Keldi:</strong>{" "}
             {todayStatus.arrivel_time || "Hali kelmagan"}
@@ -187,11 +243,11 @@ const MainPage = ({ user, role }) => {
           </p>
           <p>
             <strong>Ishlagan soati:</strong>{" "}
-            {todayStatus.ishlagan_soati
-              ? `${Math.floor(todayStatus.ishlagan_soati / 3600)} soat, ${
-                  (todayStatus.ishlagan_soati % 3600) / 60
-                } daqiqa, ${todayStatus.ishlagan_soati % 60} sekund`
-              : "Hali ma'lumot yo'q"}
+            {todayStatus.ishlagan_soati ? (
+              <>{formatTime(todayStatus.ishlagan_soati)}</>
+            ) : (
+              "Hali ma'lumot yo'q"
+            )}
           </p>
         </div>
       )}
