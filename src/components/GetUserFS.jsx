@@ -1,12 +1,9 @@
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
-import MainPage from '../components/MainPage'
-export default async function Home() {
+
+const GetUserFS = async () => {
   const { getUser } = getKindeServerSession();
   const user = await getUser();
+  return user;
+};
 
-  return (
-    <>
-      <MainPage user={user} />
-    </>
-  );
-}
+export default GetUserFS;
