@@ -91,7 +91,9 @@ const MyAttendess = ({ currentUser }) => {
   };
 
   const getuserTimes = async () => {
-    const data = await GetUserWorkSchedule(currentUser.id || currentUser.kindeId);
+    const data = await GetUserWorkSchedule(
+      currentUser.id || currentUser.kindeId
+    );
     setWorkSchedule(data);
   };
 
@@ -236,6 +238,9 @@ const MyAttendess = ({ currentUser }) => {
             <TableHeader>
               <TableRow>
                 <TableCell className="bg-gray-400">
+                  <strong>№</strong>
+                </TableCell>
+                <TableCell className="bg-gray-400">
                   <strong>Sana</strong>
                 </TableCell>
                 <TableCell className="bg-gray-400">
@@ -253,13 +258,14 @@ const MyAttendess = ({ currentUser }) => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {attendess.map((record) => {
+              {attendess.map((record, i) => {
                 const arrivalStatus = vaqtniTekshir(
                   workSchedule?.defaultStartTime || "09:00",
                   record.arrivel_time || null
                 );
                 return (
                   <TableRow key={record.id} className={arrivalStatus.bgColor}>
+                    <TableCell>{i + 1 || "-"}</TableCell>
                     <TableCell>{record.date || "-"}</TableCell>
                     <TableCell>{record.arrivel_time || "-"}</TableCell>
                     <TableCell>{record.gone_time || "-"}</TableCell>

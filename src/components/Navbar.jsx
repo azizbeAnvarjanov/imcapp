@@ -59,6 +59,9 @@ const Navbar = async () => {
                   <Link href="/all-users">
                     <Button>Xodimlar</Button>
                   </Link>
+                  <Link href="/cust-dev">
+                    <Button>Cust-Dev</Button>
+                  </Link>
                 </>
               ) : (
                 <></>

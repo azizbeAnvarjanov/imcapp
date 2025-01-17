@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { collection, getDocs, query, where } from "firebase/firestore";
+import { collection, onSnapshot, query, where } from "firebase/firestore";
 import { db } from "../../app/firebase";
 import {
   Table,
@@ -28,43 +28,40 @@ const AllAttendess = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const fetchUsers = async () => {
-    try {
-      const usersRef = collection(db, "users");
-      const userDocs = await getDocs(usersRef);
-      const usersData = userDocs.docs.map((doc) => ({
+  const fetchUsers = () => {
+    const usersRef = collection(db, "users");
+    onSnapshot(usersRef, (snapshot) => {
+      const usersData = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
       }));
       setUsers(usersData);
-    } catch (err) {
+    }, (err) => {
       setError("Foydalanuvchilarni olishda xato yuz berdi.");
-    }
+    });
   };
 
-  const fetchAttendess = async (date) => {
+  const fetchAttendess = (date) => {
     setLoading(true);
     setError(null);
-    try {
-      const attendessRef = collection(db, "attendess");
-      const q = query(attendessRef, where("date", "==", date));
-      const attendessDocs = await getDocs(q);
-      const attendessData = attendessDocs.docs.map((doc) => ({
+    const attendessRef = collection(db, "attendess");
+    const q = query(attendessRef, where("date", "==", date));
+    onSnapshot(q, (snapshot) => {
+      const attendessData = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
       }));
       setAttendess(attendessData);
-    } catch (err) {
-      setError("Ma'lumotlarni olishda xato yuz berdi.");
-    } finally {
       setLoading(false);
-    }
+    }, (err) => {
+      setError("Ma'lumotlarni olishda xato yuz berdi.");
+      setLoading(false);
+    });
   };
 
   const handleDateChange = (e) => {
     const newDate = e.target.value;
     setSelectedDate(newDate);
-    fetchAttendess(newDate);
   };
 
   useEffect(() => {
