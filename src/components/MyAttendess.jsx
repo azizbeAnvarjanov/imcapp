@@ -7,6 +7,7 @@ import "jspdf-autotable";
 import * as XLSX from "xlsx";
 import { Button } from "@/components/ui/button";
 import { Printer, Table2, FileDown } from "lucide-react";
+import GetUserWorkSchedule from "./GetUserWorkSchedule";
 
 import {
   Select,
@@ -31,9 +32,9 @@ const MyAttendess = ({ currentUser }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [totalHours, setTotalHours] = useState(0);
+  const [workSchedule, setWorkSchedule] = useState(null);
 
   const tableRef = useRef();
-
 
   const months = [
     "Yanvar",
@@ -89,7 +90,13 @@ const MyAttendess = ({ currentUser }) => {
     fetchMyAttendess(newMonth);
   };
 
+  const getuserTimes = async () => {
+    const data = await GetUserWorkSchedule(currentUser.id || currentUser.kindeId);
+    setWorkSchedule(data);
+  };
+
   useEffect(() => {
+    getuserTimes();
     fetchMyAttendess(selectedMonth);
   }, [selectedMonth]);
 
@@ -158,7 +165,7 @@ const MyAttendess = ({ currentUser }) => {
 
     if (farq > 0) {
       return {
-        status: formatTime(farq * 60),
+        status: `${formatTime(farq * 60)} kech qoldingiz.`,
         bgColor: "bg-red-500",
       };
     } else if (farq < 0) {
@@ -240,19 +247,29 @@ const MyAttendess = ({ currentUser }) => {
                 <TableCell className="bg-gray-400">
                   <strong>Ishlagan Soati</strong>
                 </TableCell>
+                <TableCell className="bg-gray-400">
+                  <strong>Status</strong>
+                </TableCell>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {attendess.map((record) => (
-                <TableRow key={record.id}>
-                  <TableCell>{record.date || "-"}</TableCell>
-                  <TableCell>{record.arrivel_time || "-"}</TableCell>
-                  <TableCell>{record.gone_time || "-"}</TableCell>
-                  <TableCell>
-                    {formatTime(record.ishlagan_soati) || "-"}
-                  </TableCell>
-                </TableRow>
-              ))}
+              {attendess.map((record) => {
+                const arrivalStatus = vaqtniTekshir(
+                  workSchedule?.defaultStartTime || "09:00",
+                  record.arrivel_time || null
+                );
+                return (
+                  <TableRow key={record.id} className={arrivalStatus.bgColor}>
+                    <TableCell>{record.date || "-"}</TableCell>
+                    <TableCell>{record.arrivel_time || "-"}</TableCell>
+                    <TableCell>{record.gone_time || "-"}</TableCell>
+                    <TableCell>
+                      {formatTime(record.ishlagan_soati) || "-"}
+                    </TableCell>
+                    <TableCell>{arrivalStatus.status || "-"}</TableCell>
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
         </div>
