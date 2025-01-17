@@ -6,7 +6,7 @@ export default async function Home() {
 
   return (
     <>
-      Hello {user.family_name}
+      Hello {user?.family_name}
     </>
   );
 }
