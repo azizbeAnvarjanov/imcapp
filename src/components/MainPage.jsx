@@ -9,7 +9,7 @@ const MainPage = ({ user, role }) => {
   return (
     <div>
       Hello {user ? <>{user.family_name}</>:<></>} <br />
-      Role {role ? <>{role}</>:<></>} <br />
+      Role {role ? <>{role[0].name}</>:<></>} <br />
       <LogoutLink>
         <Button variant="destructive">Log out</Button>
       </LogoutLink>
