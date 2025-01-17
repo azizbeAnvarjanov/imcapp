@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 const Navbar = async () => {
   const user = await GetUserFS();
   const roles = await GetRoles();
-  const role = roles[0]?.name;
+  const role = roles ? roles[0]?.name : "";
   return (
     <div>
       {!user ? (
