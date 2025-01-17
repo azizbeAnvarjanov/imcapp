@@ -1,12 +1,11 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { collection, getDocs } from "firebase/firestore";
+import { collection, getDocs, doc, updateDoc } from "firebase/firestore";
 import { db } from "../firebase";
 import {
   Table,
   TableBody,
-  TableCaption,
   TableCell,
   TableHead,
   TableHeader,
@@ -14,20 +13,25 @@ import {
 } from "@/components/ui/table";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Table2, Printer, FileDown } from "lucide-react";
+import { Table2, Printer, FileDown, Pen, Settings2 } from "lucide-react";
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
+import { Input } from "@/components/ui/input";
+
+import EditShedule from "../../components/EditShedule";
 
 const AllUsers = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [editingUser, setEditingUser] = useState(null);
+  const [startTime, setStartTime] = useState("08:00");
+  const [endTime, setEndTime] = useState("17:00");
 
-  // Foydalanuvchilarni olish
   const fetchUsers = async () => {
     try {
-      const usersCollectionRef = collection(db, "users"); // "users" - kolleksiya nomi
+      const usersCollectionRef = collection(db, "users");
       const querySnapshot = await getDocs(usersCollectionRef);
       const usersData = querySnapshot.docs.map((doc) => ({
         id: doc.id,
@@ -46,6 +50,34 @@ const AllUsers = () => {
     fetchUsers();
   }, []);
 
+  const startEditing = (user) => {
+    setEditingUser(user.id);
+    setStartTime(user.workSchedule?.defaultStartTime || "08:00");
+    setEndTime(user.workSchedule?.defaultEndTime || "17:00");
+  };
+
+  const cancelEditing = () => {
+    setEditingUser(null);
+    setStartTime("08:00");
+    setEndTime("17:00");
+  };
+
+  const saveSchedule = async (userId) => {
+    try {
+      const userDocRef = doc(db, "users", userId);
+      await updateDoc(userDocRef, {
+        "workSchedule.defaultStartTime": startTime,
+        "workSchedule.defaultEndTime": endTime,
+      });
+      fetchUsers(); // Refresh the user list
+    } catch (err) {
+      setError("Ish grafigini yangilashda xato yuz berdi.");
+      console.error(err);
+    } finally {
+      cancelEditing();
+    }
+  };
+
   if (loading) {
     return <div>Yuklanmoqda...</div>;
   }
@@ -54,64 +86,13 @@ const AllUsers = () => {
     return <div className="text-red-500">{error}</div>;
   }
 
-  const exportToPDF = () => {
-    const doc = new jsPDF();
-    doc.text("Xodimlar", 14, 10);
-    doc.autoTable({
-      head: [["№", "Ismi", "Familiyasi", "Email", "Ro'li"]],
-      body: users.map((user, i) => [
-        i + 1 || "-",
-        user.name || "-",
-        user.surname || "-",
-        user.email || "-",
-        user.role || "-",
-      ]),
-    });
-
-    doc.save("Xodimlar.pdf");
-  };
-
-  const exportToExcel = () => {
-    const worksheet = XLSX.utils.json_to_sheet(
-      users.map((user, i) => ({
-        "№": i + 1 || "-",
-        Ismi: user.name || "-",
-        Familiyasi: user.surname || "-",
-        Email: user.email || "-",
-        Roli: user.role || "-",
-      }))
-    );
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Xodimlar");
-    XLSX.writeFile(workbook, "xodimlar.xlsx");
-  };
-
-  const handlePrint = () => {
-    const printContent = document.getElementById("table-content").innerHTML;
-    const originalContent = document.body.innerHTML;
-    document.body.innerHTML = printContent;
-    window.print();
-    document.body.innerHTML = originalContent;
-    window.location.reload();
-  };
-
   return (
     <div className="p-4">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold mb-4">
           Barcha foydalanuvchilar - {users.length}
         </h1>
-        <div className="flex gap-2">
-          <Button onClick={handlePrint}>
-            <Printer />
-          </Button>
-          <Button onClick={exportToExcel}>
-            <Table2 />
-          </Button>
-          <Button onClick={exportToPDF}>
-            <FileDown />
-          </Button>
-        </div>
+        {/* Export buttons here */}
       </div>
       {users.length > 0 ? (
         <div className="overflow-x-auto" id="table-content">
@@ -125,6 +106,7 @@ const AllUsers = () => {
                 </TableCell>
                 <TableCell className="bg-gray-500 text-white">Email</TableCell>
                 <TableCell className="bg-gray-500 text-white">Ro'li</TableCell>
+                <TableCell className="bg-gray-500 text-white">Grafig</TableCell>
                 <TableCell className="bg-gray-500 text-white">
                   Amallar
                 </TableCell>
@@ -148,10 +130,50 @@ const AllUsers = () => {
                   <TableCell className="border p-2">
                     {user.role || "Ma'lumot yo'q"}
                   </TableCell>
+                  <TableCell className="border-none p-2 flex items-center justify-between">
+                    {user.workSchedule.defaultStartTime || "Ma'lumot yo'q"}
+                    {` - `}
+                    {user.workSchedule.defaultEndTime || "Ma'lumot yo'q"}
+                    {editingUser === user.id ? (
+                      <>
+                        <Input
+                          type="time"
+                          value={startTime}
+                          onChange={(e) => setStartTime(e.target.value)}
+                          className="border rounded p-1 w-[100px] inline-block"
+                        />
+                        <Input
+                          type="time"
+                          value={endTime}
+                          onChange={(e) => setEndTime(e.target.value)}
+                          className="border rounded p-1 ml-2 w-[100px] inline-block"
+                        />
+                        <Button
+                          className="ml-2"
+                          onClick={() => saveSchedule(user.id)}
+                        >
+                          Saqlash
+                        </Button>
+                        <Button
+                          className="ml-2"
+                          variant="secondary"
+                          onClick={cancelEditing}
+                        >
+                          Bekor qilish
+                        </Button>
+                      </>
+                    ) : (
+                      <>
+                        <Button onClick={() => startEditing(user)} className="">
+                          <Settings2 />
+                        </Button>
+                      </>
+                    )}
+                  </TableCell>
                   <TableCell className="border p-2 text-center">
                     <Link
                       href={`/user/${user.id}`}
-                      className="text-blue-500 underline hover:text-blue-700"
+                      className="text-blue-500 underline hover:text-blue-700 ml-2"
                     >
                       Batafsil
                     </Link>

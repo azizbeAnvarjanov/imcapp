@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import {
   doc,
-  getDoc,
+  onSnapshot,
   collection,
   query,
   where,
@@ -12,6 +12,7 @@ import {
 } from "firebase/firestore";
 import { db } from "../../firebase";
 import MyAttendess from "../../../components/MyAttendess";
+import EditSchedule from "@/components/EditShedule";
 
 const UserInfos = () => {
   const params = useParams();
@@ -19,31 +20,39 @@ const UserInfos = () => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1); // Joriy oy
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const [attendances, setAttendances] = useState([]);
 
-  // Foydalanuvchi ma'lumotlarini olish
-  const fetchUserData = async (id) => {
-    try {
-      const userDocRef = doc(db, "users", id); // "users" - kolleksiya nomi
-      const userDoc = await getDoc(userDocRef);
-      if (userDoc.exists()) {
-        setUser(userDoc.data());
-      } else {
-        setError("Foydalanuvchi topilmadi.");
-      }
-    } catch (err) {
-      setError("Ma'lumotlarni olishda xato yuz berdi.");
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Real-time listener for user data
+  useEffect(() => {
+    if (userId) {
+      const userDocRef = doc(db, "users", userId);
+      const unsubscribe = onSnapshot(
+        userDocRef,
+        (doc) => {
+          if (doc.exists()) {
+            setUser(doc.data());
+          } else {
+            setError("Foydalanuvchi topilmadi.");
+          }
+          setLoading(false);
+        },
+        (err) => {
+          setError("Ma'lumotlarni olishda xato yuz berdi.");
+          setLoading(false);
+        }
+      );
 
-  // Davomatni olish
+      // Cleanup the listener on component unmount
+      return () => unsubscribe();
+    }
+  }, [userId]);
+
+  // Fetch user attendances
   const fetchUserAttendances = async (id, month) => {
     try {
       const attendancesQuery = query(
-        collection(db, "attendances"), // "attendances" - kolleksiya nomi
+        collection(db, "attendances"),
         where("userId", "==", id),
         where("month", "==", month)
       );
@@ -57,11 +66,9 @@ const UserInfos = () => {
       console.error("Davomatlarni olishda xato yuz berdi:", err);
     }
   };
-  console.log(user);
 
   useEffect(() => {
     if (userId) {
-      fetchUserData(userId);
       fetchUserAttendances(userId, selectedMonth);
     }
   }, [userId, selectedMonth]);
@@ -94,7 +101,15 @@ const UserInfos = () => {
             <p>
               <strong>Ro'li:</strong> {user.role || "Ma'lumot yo'q"}
             </p>
+            <p>
+              <strong>Ish grafigi:</strong>{" "}
+              {user.workSchedule?.defaultStartTime || "Ma'lumot yo'q"} -{" "}
+              {user.workSchedule?.defaultEndTime || "Ma'lumot yo'q"}
+            </p>
           </div>
+
+          {/* Edit Schedule Component */}
+          <EditSchedule userId={userId} />
 
           <MyAttendess currentUser={user} />
         </div>
