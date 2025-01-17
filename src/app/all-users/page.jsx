@@ -99,15 +99,25 @@ const AllUsers = () => {
           <Table className="w-full border-collapse border border-gray-200">
             <TableHeader>
               <TableRow>
-                <TableCell className="bg-gray-500 text-white">№</TableCell>
-                <TableCell className="bg-gray-500 text-white">Ismi</TableCell>
-                <TableCell className="bg-gray-500 text-white">
+                <TableCell className="bg-gray-500 text-white font-bold">
+                  №
+                </TableCell>
+                <TableCell className="bg-gray-500 text-white font-bold">
+                  Ismi
+                </TableCell>
+                <TableCell className="bg-gray-500 text-white font-bold">
                   Familiyasi
                 </TableCell>
-                <TableCell className="bg-gray-500 text-white">Email</TableCell>
-                <TableCell className="bg-gray-500 text-white">Ro'li</TableCell>
-                <TableCell className="bg-gray-500 text-white">Grafig</TableCell>
-                <TableCell className="bg-gray-500 text-white">
+                <TableCell className="bg-gray-500 text-white font-bold">
+                  Email
+                </TableCell>
+                <TableCell className="bg-gray-500 text-white font-bold">
+                  Ro'li
+                </TableCell>
+                <TableCell className="bg-gray-500 text-white font-bold">
+                  Ish grafigi
+                </TableCell>
+                <TableCell className="bg-gray-500 text-white font-bold">
                   Amallar
                 </TableCell>
               </TableRow>
@@ -134,41 +144,6 @@ const AllUsers = () => {
                     {user.workSchedule.defaultStartTime || "Ma'lumot yo'q"}
                     {` - `}
                     {user.workSchedule.defaultEndTime || "Ma'lumot yo'q"}
-                    {editingUser === user.id ? (
-                      <>
-                        <Input
-                          type="time"
-                          value={startTime}
-                          onChange={(e) => setStartTime(e.target.value)}
-                          className="border rounded p-1 w-[100px] inline-block"
-                        />
-                        <Input
-                          type="time"
-                          value={endTime}
-                          onChange={(e) => setEndTime(e.target.value)}
-                          className="border rounded p-1 ml-2 w-[100px] inline-block"
-                        />
-                        <Button
-                          className="ml-2"
-                          onClick={() => saveSchedule(user.id)}
-                        >
-                          Saqlash
-                        </Button>
-                        <Button
-                          className="ml-2"
-                          variant="secondary"
-                          onClick={cancelEditing}
-                        >
-                          Bekor qilish
-                        </Button>
-                      </>
-                    ) : (
-                      <>
-                        <Button onClick={() => startEditing(user)} className="">
-                          <Settings2 />
-                        </Button>
-                      </>
-                    )}
                   </TableCell>
                   <TableCell className="border p-2 text-center">
                     <Link
