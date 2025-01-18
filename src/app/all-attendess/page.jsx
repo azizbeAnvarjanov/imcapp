@@ -184,8 +184,8 @@ const AllAttendess = () => {
         <div
           className="overflow-x-auto rounded-lg overflow-hidden"
           id="table-content"
-        >
-          <Table className="table-auto border-collapse w-full">
+        > 
+          <Table className="table-auto border-collapse w-full overflow-x-scroll min-w-[1000px]">
             <TableHeader>
               <TableRow>
                 <TableCell className="bg-gray-400 font-bold">№</TableCell>

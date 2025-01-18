@@ -96,7 +96,7 @@ const AllUsers = () => {
       </div>
       {users.length > 0 ? (
         <div className="overflow-x-auto" id="table-content">
-          <Table className="w-full border-collapse border border-gray-200">
+          <Table className="w-full border-collapse border border-gray-200 overflow-x-scroll min-w-[1000px]">
             <TableHeader>
               <TableRow>
                 <TableCell className="bg-gray-500 text-white font-bold">
