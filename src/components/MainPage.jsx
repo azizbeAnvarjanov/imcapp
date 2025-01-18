@@ -190,7 +190,7 @@ const MainPage = ({ user, role }) => {
   const vaqtniTekshir = (grafikVaqti, kelganVaqti) => {
     if (!kelganVaqti) {
       return {
-        status: "Hali kelmadi",
+        status: "Hali kelmadingiz",
         bgColor: "",
       };
     }
@@ -202,18 +202,21 @@ const MainPage = ({ user, role }) => {
 
     if (farq > 0) {
       return {
-        status: `${formatTime(farq * 60)} kech qoldiz`,
-        color: "text-red-500",
+        status: `${formatTime(farq * 60)} kech qoldingiz`,
+        color: "text-white",
+        bg: "bg-red-500",
       };
     } else if (farq < 0) {
       return {
-        status: `${Math.abs(farq)} daqiqa erta keldi.`,
-        color: "text-green-500",
+        status: `${Math.abs(farq)} daqiqa erta keldingiz.`,
+        color: "text-white",
+        bg: "bg-green-500",
       };
     } else {
       return {
-        status: `O'z vaqtida keldi.`,
-        color: "text-green-500",
+        status: `O'z vaqtida keldingiz.`,
+        color: "text-white",
+        bg: "bg-green-500",
       };
     }
   };
@@ -223,25 +226,31 @@ const MainPage = ({ user, role }) => {
     todayStatus?.arrivel_time || null
   );
   return (
-    <div className="p-10">
-      <h1 className="text-xl font-bold mb-4">Hozirgi vaqt: {currentTime}</h1>
+    <div className="p-4 flex flex-col justify-center md:justify-start md:p-10  main_page h-[100vh] text-center">
+      <h1 className="text-[3em] sm:text-[3em] md:text-[8em] font-bold text-white">
+        {currentTime}
+      </h1>
+      <h1 className="text-[1.5em] sm:text-[2em] font-bold mb-4 text-wrap text-white">
+        {user?.family_name} {user?.given_name}
+      </h1>
       {todayStatus && (
-        <div className="mb-4">
-          <p>
-            <strong>Statusi:</strong>{" "}
+        <div className="mb-4 mx-auto text-white lg:w-[900px] text-left grid lg:grid-cols-2 gap-4">
+          <p className={` py-2 px-5 rounded-md shadow-lg ${arrivalStatus.bg}`}>
+            <strong>Status:</strong>{" "}
             <span className={arrivalStatus.color}>{arrivalStatus.status}</span>
           </p>
-          <p>
+          <p className="bg-white text-black py-2 px-5 rounded-md shadow-lg">
             <strong>Ish grafigi:</strong> {defaultStartTime} - {defaultEndTime}
           </p>
-          <p>
-            <strong>Keldi:</strong>{" "}
-            {todayStatus.arrivel_time || "Hali kelmagan"}
+          <p className="bg-white text-black py-2 px-5 rounded-md shadow-lg">
+            <strong>Keldingiz:</strong>{" "}
+            {todayStatus.arrivel_time || "Hali kelmadingiz"}
           </p>
-          <p>
-            <strong>Ketdi:</strong> {todayStatus.gone_time || "Hali ketmagan"}
+          <p className="bg-white text-black py-2 px-5 rounded-md shadow-lg">
+            <strong>Ketdingiz:</strong>{" "}
+            {todayStatus.gone_time || "Hali ketmadingiz"}
           </p>
-          <p>
+          <p className="bg-white text-black py-2 px-5 rounded-md shadow-lg">
             <strong>Ishlagan soati:</strong>{" "}
             {todayStatus.ishlagan_soati ? (
               <>{formatTime(todayStatus.ishlagan_soati)}</>
@@ -252,7 +261,7 @@ const MainPage = ({ user, role }) => {
         </div>
       )}
 
-      <div className="flex gap-3">
+      <div className="flex gap-3 mx-auto items-center justify-center">
         <Button
           className={`${
             isArriveDisabled ? "bg-gray-600 cursor-not-allowed" : "bg-blue-600"
@@ -260,7 +269,7 @@ const MainPage = ({ user, role }) => {
           onClick={handleArrive}
           disabled={isArriveDisabled || loading}
         >
-          Men keldim
+          Keldim
         </Button>
         <Button
           className={`${
@@ -269,7 +278,7 @@ const MainPage = ({ user, role }) => {
           onClick={handleDepart}
           disabled={isDepartDisabled || loading}
         >
-          Men ketdim
+          Ketdim
         </Button>
       </div>
     </div>
