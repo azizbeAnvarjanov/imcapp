@@ -25,6 +25,7 @@ const MainPage = ({ user, role }) => {
   const [currentTime, setCurrentTime] = useState("");
   const [defaultEndTime, setDefaultEndTime] = useState("");
   const [defaultStartTime, setDefaultStartTime] = useState("");
+  const [today, setToday] = useState("");
 
   const handleArrive = async () => {
     setLoading(true);
@@ -130,8 +131,22 @@ const MainPage = ({ user, role }) => {
     }
   };
 
+  // const today = new Date().toISOString().split("T")[0];
+  function getTodayDate() {
+    const today = new Date();
+
+    // Sana elementlarini ajratib olish
+    const year = today.getFullYear(); // Yil
+    const month = String(today.getMonth() + 1).padStart(2, "0"); // Oy (0-11, shuning uchun +1 qilinadi)
+    const day = String(today.getDate()).padStart(2, "0"); // Kun
+
+    // Kerakli formatda qaytarish
+    setToday(`${year}-${month}-${day}`);
+  }
+
+  // Funksiyani chaqirish
+
   const checkButtonState = async () => {
-    const today = new Date().toISOString().split("T")[0];
     const attendessRef = collection(db, "attendess");
 
     try {
@@ -174,6 +189,7 @@ const MainPage = ({ user, role }) => {
   };
 
   useEffect(() => {
+    getTodayDate();
     getuserTimes();
     checkButtonState();
     updateCurrentTime();
@@ -231,7 +247,8 @@ const MainPage = ({ user, role }) => {
         {currentTime}
       </h1>
       <h1 className="text-[1.5em] sm:text-[2em] font-bold mb-4 text-wrap text-white">
-        {user?.family_name} {user?.given_name}
+        {user?.family_name} {user?.given_name} -{" "}
+        <span className="text-3xl">{today}</span>
       </h1>
       {todayStatus && (
         <div className="mb-4 mx-auto text-white lg:w-[900px] text-left grid lg:grid-cols-2 gap-4">
