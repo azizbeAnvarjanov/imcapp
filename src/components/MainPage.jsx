@@ -25,11 +25,22 @@ const MainPage = ({ user, role }) => {
   const [currentTime, setCurrentTime] = useState("");
   const [defaultEndTime, setDefaultEndTime] = useState("");
   const [defaultStartTime, setDefaultStartTime] = useState("");
-  const [today, setToday] = useState("");
+  // const [today, setToday] = useState("");
+
+  const currentToday = new Date();
+
+  // Sana elementlarini ajratib olish
+  const year = currentToday.getFullYear(); // Yil
+  const month = String(currentToday.getMonth() + 1).padStart(2, "0"); // Oy (0-11, shuning uchun +1 qilinadi)
+  const day = String(currentToday.getDate()).padStart(2, "0"); // Kun
+
+  // Kerakli formatda qaytarish
+  const today = `${year}-${month}-${day}`
+
+
 
   const handleArrive = async () => {
     setLoading(true);
-    const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD format
     const time = new Date().toLocaleTimeString(); // HH:MM:SS format
     const attendessRef = collection(db, "attendess");
 
@@ -71,7 +82,6 @@ const MainPage = ({ user, role }) => {
 
   const handleDepart = async () => {
     setLoading(true);
-    const today = new Date().toISOString().split("T")[0];
     const time = new Date().toLocaleTimeString();
     const attendessRef = collection(db, "attendess");
 
@@ -146,35 +156,38 @@ const MainPage = ({ user, role }) => {
 
   // Funksiyani chaqirish
 
-  const checkButtonState = async () => {
+  const checkButtonState = () => {
     const attendessRef = collection(db, "attendess");
-
+  
     try {
       const q = query(
         attendessRef,
-        where("userId", "==", user?.id),
+        where("userId", "==", user?.id || user?.kindeId),
         where("date", "==", today)
       );
-
+  
       const unsubscribe = onSnapshot(q, (snapshot) => {
         if (!snapshot.empty) {
           const data = snapshot.docs[0].data();
           setTodayStatus(data);
-
+  
           if (data.arrivel_time) {
             setIsArriveDisabled(true);
           }
           if (data.gone_time) {
             setIsDepartDisabled(true);
           }
+        } else {
+          setTodayStatus(null); // Agar bazada hech narsa bo'lmasa, todayStatus ni null ga o'zgartir
         }
       });
-
+  
       return () => unsubscribe();
     } catch (error) {
       console.error("Tugma holatini tekshirishda xato: ", error);
     }
   };
+  
 
   const updateCurrentTime = () => {
     const now = new Date();
@@ -189,13 +202,14 @@ const MainPage = ({ user, role }) => {
   };
 
   useEffect(() => {
-    getTodayDate();
-    getuserTimes();
     checkButtonState();
+    // getTodayDate();
+    getuserTimes();
     updateCurrentTime();
     const interval = setInterval(updateCurrentTime, 1000);
     return () => clearInterval(interval);
   }, [user]);
+  
   const formatTime = (totalSeconds) => {
     const hours = Math.floor(totalSeconds / 3600);
     const minutes = Math.floor((totalSeconds % 3600) / 60);
@@ -224,7 +238,7 @@ const MainPage = ({ user, role }) => {
       };
     } else if (farq < 0) {
       return {
-        status: `${Math.abs(farq)} daqiqa erta keldingiz.`,
+        status: `${formatTime(farq * 60)} daqiqa erta keldingiz.`,
         color: "text-white",
         bg: "bg-green-500",
       };
@@ -241,13 +255,16 @@ const MainPage = ({ user, role }) => {
     defaultStartTime || "09:00",
     todayStatus?.arrivel_time || null
   );
+
+
+  
   return (
     <div className="p-4 flex flex-col justify-center md:justify-start md:p-10  main_page h-[100vh] text-center">
       <h1 className="text-[3em] sm:text-[3em] md:text-[8em] font-bold text-white">
         {currentTime}
       </h1>
       <h1 className="text-[1.5em] sm:text-[2em] font-bold mb-4 text-wrap text-white">
-        {user?.family_name} {user?.given_name} -{" "}
+        {user?.family_name} {user?.given_name} - {" "} {todayStatus?.arrivel_time} -  
         <span className="text-3xl">{today}</span>
       </h1>
       {todayStatus && (
