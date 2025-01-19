@@ -22,7 +22,7 @@ export const metadata = {
 };
 
 export default async function RootLayout({ children }) {
-  const role = await GetRoles()
+  const role = await GetRoles();
   return (
     <AuthProvider>
       <html lang="en">
@@ -30,9 +30,9 @@ export default async function RootLayout({ children }) {
           className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         >
           <Toaster position="bottom-right" reverseOrder={false} />
-          <div className="pb-[100px]">{children}</div>
+          <div>{children}</div>
 
-          <Dockbar role={role}/>
+          <Dockbar role={role} />
         </body>
       </html>
     </AuthProvider>

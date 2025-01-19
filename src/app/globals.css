@@ -2,12 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-.main_page {
-  font-family: Arial, Helvetica, sans-serif;
-  background-image: url('/bg3.jpg');
-  background-position: top;
-  background-size: cover;
-}
+
 
 @layer base {
   :root {
@@ -71,5 +66,79 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+
+
+/* From Uiverse.io by Allyhere */ 
+.keldim_btn {
+  --clr-font-main: hsla(0 0% 20% / 100);
+  --btn-bg-1: hsla(194 100% 69% / 1);
+  --btn-bg-2: hsla(217 100% 56% / 1);
+  --btn-bg-color: hsla(360 100% 100% / 1);
+  --radii: 0.5em;
+  cursor: pointer;
+  padding: 0.9em 1.4em;
+  font-weight: 500;
+  transition: 0.8s;
+  background-size: 280% auto;
+  background-image: linear-gradient(    325deg,    var(--btn-bg-2) 0%,    var(--btn-bg-1) 55%,    var(--btn-bg-2) 90%  );
+  border: none;
+  color: var(--btn-bg-color);
+  box-shadow:    0px 0px 50px rgba(71, 184, 255, 0.5),    0px 5px 5px -1px rgba(58, 125, 233, 0.25),    inset 4px 4px 8px rgba(175, 230, 255, 0.5),    inset -4px -4px 8px rgba(19, 95, 216, 0.35);
+  -webkit-border-radius: var(--radii);
+  -moz-border-radius: var(--radii);
+  -ms-border-radius: var(--radii);
+  -o-border-radius: var(--radii);
+}
+.ketdim_btn {
+  --clr-font-main: hsla(0 0% 20% / 100);
+  --btn-bg-1: rgb(255, 179, 97);
+  --btn-bg-2: rgb(255, 31, 31);
+  --btn-bg-color: hsla(360 100% 100% / 1);
+  --radii: 0.5em;
+  cursor: pointer;
+  padding: 0.9em 1.4em;
+  font-weight: 500;
+  transition: 0.8s;
+  background-size: 280% auto;
+  background-image: linear-gradient(    325deg,    var(--btn-bg-2) 0%,    var(--btn-bg-1) 55%,    var(--btn-bg-2) 90%  );
+  border: none;
+  color: var(--btn-bg-color);
+  box-shadow:    0px 0px 50px rgba(255, 71, 71, 0.5),    0px 5px 5px -1px rgba(58, 125, 233, 0.25),    inset 4px 4px 8px rgba(175, 230, 255, 0.5),    inset -4px -4px 8px rgba(19, 95, 216, 0.35);
+  -webkit-border-radius: var(--radii);
+  -moz-border-radius: var(--radii);
+  -ms-border-radius: var(--radii);
+  -o-border-radius: var(--radii);
+}
+
+.keldim_btn:hover {
+  background-position: right top;
+}
+
+.ketdim_btn:hover {
+  background-position: right top;
+}
+
+.keldim_btn:is(:focus, :focus-visible, :active) {
+  outline: none;
+  box-shadow:
+    0 0 0 30px var(--btn-bg-color),
+    0 0 0 6px var(--btn-bg-2);
+}
+.ketdim_btn:is(:focus, :focus-visible, :active) {
+  outline: none;
+  box-shadow:
+    0 0 0 30px var(--btn-bg-color),
+    0 0 0 6px var(--btn-bg-2);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .keldim_btn {
+    transition: linear;
+  }
+  .ketdim_btn {
+    transition: linear;
   }
 }

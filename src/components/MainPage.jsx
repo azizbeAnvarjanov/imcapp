@@ -10,38 +10,30 @@ import {
   where,
   onSnapshot,
 } from "firebase/firestore";
-import GetUserWorkSchedule from "./GetUserWorkSchedule";
-
 import withIpCheck from "../app/hoc/withIpCheck";
 import { db } from "../app/firebase";
 import { Button } from "@/components/ui/button";
 import { toast } from "react-hot-toast";
+import Image from "next/image";
+import GetUserWorkSchedule from "./GetUserWorkSchedule";
+import { ClockArrowDown, ClockArrowUp } from "lucide-react";
 
-const MainPage = ({ user, role }) => {
+const MainPage = ({ user }) => {
   const [loading, setLoading] = useState(false);
-  const [isArriveDisabled, setIsArriveDisabled] = useState(false);
-  const [isDepartDisabled, setIsDepartDisabled] = useState(false);
   const [todayStatus, setTodayStatus] = useState(null);
   const [currentTime, setCurrentTime] = useState("");
   const [defaultEndTime, setDefaultEndTime] = useState("");
   const [defaultStartTime, setDefaultStartTime] = useState("");
-  // const [today, setToday] = useState("");
 
   const currentToday = new Date();
-
-  // Sana elementlarini ajratib olish
-  const year = currentToday.getFullYear(); // Yil
-  const month = String(currentToday.getMonth() + 1).padStart(2, "0"); // Oy (0-11, shuning uchun +1 qilinadi)
-  const day = String(currentToday.getDate()).padStart(2, "0"); // Kun
-
-  // Kerakli formatda qaytarish
-  const today = `${year}-${month}-${day}`
-
-
+  const year = currentToday.getFullYear();
+  const month = String(currentToday.getMonth() + 1).padStart(2, "0");
+  const day = String(currentToday.getDate()).padStart(2, "0");
+  const today = `${year}-${month}-${day}`;
 
   const handleArrive = async () => {
     setLoading(true);
-    const time = new Date().toLocaleTimeString(); // HH:MM:SS format
+    const time = new Date().toLocaleTimeString();
     const attendessRef = collection(db, "attendess");
 
     try {
@@ -54,11 +46,8 @@ const MainPage = ({ user, role }) => {
 
       if (!querySnapshot.empty) {
         toast.error("Bugungi kunga kelish vaqti allaqachon yozilgan!");
-        setIsArriveDisabled(true);
         return;
       }
-
-      const currentMonth = new Date().getMonth() + 1;
 
       await addDoc(attendessRef, {
         arrivel_time: time,
@@ -68,11 +57,10 @@ const MainPage = ({ user, role }) => {
         date: today,
         userId: user?.id,
         ishlagan_soati: null,
-        month: currentMonth,
+        month: new Date().getMonth() + 1,
       });
 
       toast.success("Bazaga kelish vaqti yozildi.");
-      setIsArriveDisabled(true);
     } catch (error) {
       toast.error("Xato yuz berdi: " + error.message);
     } finally {
@@ -95,10 +83,6 @@ const MainPage = ({ user, role }) => {
 
       if (querySnapshot.empty) {
         toast.error("Bugungi kun uchun kelish vaqti yozilmagan!");
-        return;
-      }
-
-      if (!querySnapshot.docs.length > 0) {
         return;
       }
 
@@ -126,14 +110,7 @@ const MainPage = ({ user, role }) => {
         ishlagan_soati: workedSeconds,
       });
 
-      toast.success(
-        `Bazaga ketish vaqti yozildi. Siz ${Math.floor(
-          workedSeconds / 3600
-        )} soat, ${(workedSeconds % 3600) / 60} daqiqa, ${
-          workedSeconds % 60
-        } sekund ishladingiz.`
-      );
-      setIsDepartDisabled(true);
+      toast.success(`Bazaga ketish vaqti yozildi.`);
     } catch (error) {
       toast.error("Xato yuz berdi: " + error.message);
     } finally {
@@ -141,60 +118,35 @@ const MainPage = ({ user, role }) => {
     }
   };
 
-  // const today = new Date().toISOString().split("T")[0];
-  function getTodayDate() {
-    const today = new Date();
-
-    // Sana elementlarini ajratib olish
-    const year = today.getFullYear(); // Yil
-    const month = String(today.getMonth() + 1).padStart(2, "0"); // Oy (0-11, shuning uchun +1 qilinadi)
-    const day = String(today.getDate()).padStart(2, "0"); // Kun
-
-    // Kerakli formatda qaytarish
-    setToday(`${year}-${month}-${day}`);
-  }
-
-  // Funksiyani chaqirish
-
   const checkButtonState = () => {
     const attendessRef = collection(db, "attendess");
-  
+
     try {
       const q = query(
         attendessRef,
         where("userId", "==", user?.id || user?.kindeId),
         where("date", "==", today)
       );
-  
+
       const unsubscribe = onSnapshot(q, (snapshot) => {
         if (!snapshot.empty) {
-          const data = snapshot.docs[0].data();
-          setTodayStatus(data);
-  
-          if (data.arrivel_time) {
-            setIsArriveDisabled(true);
-          }
-          if (data.gone_time) {
-            setIsDepartDisabled(true);
-          }
+          setTodayStatus(snapshot.docs[0].data());
         } else {
-          setTodayStatus(null); // Agar bazada hech narsa bo'lmasa, todayStatus ni null ga o'zgartir
+          setTodayStatus(null);
         }
       });
-  
+
       return () => unsubscribe();
     } catch (error) {
       console.error("Tugma holatini tekshirishda xato: ", error);
     }
   };
-  
 
   const updateCurrentTime = () => {
     const now = new Date();
-    setCurrentTime(
-      now.toLocaleTimeString("en-US", { hour12: false }) // HH:MM:SS format
-    );
+    setCurrentTime(now.toLocaleTimeString("en-US", { hour12: false }));
   };
+
   const getuserTimes = async () => {
     const data = await GetUserWorkSchedule(user.id);
     setDefaultEndTime(data?.defaultEndTime);
@@ -202,118 +154,222 @@ const MainPage = ({ user, role }) => {
   };
 
   useEffect(() => {
-    checkButtonState();
-    // getTodayDate();
     getuserTimes();
+    checkButtonState();
     updateCurrentTime();
     const interval = setInterval(updateCurrentTime, 1000);
     return () => clearInterval(interval);
   }, [user]);
-  
+
   const formatTime = (totalSeconds) => {
-    const hours = Math.floor(totalSeconds / 3600);
-    const minutes = Math.floor((totalSeconds % 3600) / 60);
-    const seconds = totalSeconds % 60;
-    return `${hours} soat ${minutes} daqiqa ${seconds} soniya`;
+    const hours = Math.floor(totalSeconds / 3600)
+      .toString()
+      .padStart(2, "0");
+    const minutes = Math.floor((totalSeconds % 3600) / 60)
+      .toString()
+      .padStart(2, "0");
+    const seconds = (totalSeconds % 60).toString().padStart(2, "0");
+    return `${hours}:${minutes}:${seconds}`;
   };
 
-  const vaqtniTekshir = (grafikVaqti, kelganVaqti) => {
+  const vaqtniTekshir = (
+    grafigKelishvaqti,
+    kelganVaqti,
+    grafigKetishvaqti,
+    ketkanvaqti
+  ) => {
     if (!kelganVaqti) {
       return {
         status: "Hali kelmadingiz",
-        bgColor: "",
+        status2: "Hali ketmadingiz",
+        color: "",
+        color2: "",
+        bg: "",
       };
     }
-    const [grafikSoat, grafikDaqiqa] = grafikVaqti.split(":").map(Number);
-    const [kelganSoat, kelganDaqiqa] = kelganVaqti.split(":").map(Number);
-    const grafikVaqtMinutlarda = grafikSoat * 60 + grafikDaqiqa;
-    const kelganVaqtMinutlarda = kelganSoat * 60 + kelganDaqiqa;
-    const farq = kelganVaqtMinutlarda - grafikVaqtMinutlarda;
 
-    if (farq > 0) {
-      return {
-        status: `${formatTime(farq * 60)} kech qoldingiz`,
-        color: "text-white",
-        bg: "bg-red-500",
-      };
-    } else if (farq < 0) {
-      return {
-        status: `${formatTime(farq * 60)} daqiqa erta keldingiz.`,
-        color: "text-white",
-        bg: "bg-green-500",
-      };
+    const [grafikKelishSoat, grafikKelishDaqiqa] = grafigKelishvaqti
+      .split(":")
+      .map(Number);
+    const [kelganSoat, kelganDaqiqa] = kelganVaqti.split(":").map(Number);
+    const grafikKelishVaqtMinutlarda =
+      grafikKelishSoat * 60 + grafikKelishDaqiqa;
+    const kelganVaqtMinutlarda = kelganSoat * 60 + kelganDaqiqa;
+    const kelishFarq = kelganVaqtMinutlarda - grafikKelishVaqtMinutlarda;
+
+    let status = "";
+    let status2 = "";
+    let color = "";
+    let color2 = "";
+    let bg = "";
+
+    if (kelishFarq > 0) {
+      status += `${formatTime(kelishFarq * 60)} kech keldingiz. `;
+      color = "text-red-500";
+      bg = "bg-red-500";
+    } else if (kelishFarq < 0) {
+      status += `${formatTime(Math.abs(kelishFarq) * 60)} erta keldingiz. `;
+      color = "text-green-500";
+      bg = "bg-green-500";
     } else {
-      return {
-        status: `O'z vaqtida keldingiz.`,
-        color: "text-white",
-        bg: "bg-green-500",
-      };
+      status += `O'z vaqtida keldingiz. `;
+      color = "text-white";
+      bg = "bg-green-500";
     }
+
+    if (ketkanvaqti) {
+      const [grafikKetishSoat, grafikKetishDaqiqa] = grafigKetishvaqti
+        .split(":")
+        .map(Number);
+      const [ketkanSoat, ketkanDaqiqa] = ketkanvaqti.split(":").map(Number);
+      const grafikKetishVaqtMinutlarda =
+        grafikKetishSoat * 60 + grafikKetishDaqiqa;
+      const ketkanVaqtMinutlarda = ketkanSoat * 60 + ketkanDaqiqa;
+      const ketishFarq = ketkanVaqtMinutlarda - grafikKetishVaqtMinutlarda;
+
+      if (ketishFarq > 0) {
+        status2 += `${formatTime(ketishFarq * 60)} kech ketdingiz.`;
+        color2 = "text-green-500";
+        bg = "bg-red-500";
+      } else if (ketishFarq < 0) {
+        status2 += `${formatTime(Math.abs(ketishFarq) * 60)} erta ketdingiz.`;
+        color2 = "text-red-500";
+        bg = "bg-green-500";
+      } else {
+        status2 += `O'z vaqtida ketdingiz.`;
+      }
+    } else {
+      status2 += "Hali ketkadizngiz !";
+    }
+
+    return { status, status2, color, color2, bg };
   };
 
   const arrivalStatus = vaqtniTekshir(
-    defaultStartTime || "09:00",
-    todayStatus?.arrivel_time || null
+    defaultStartTime || "08:00",
+    todayStatus?.arrivel_time || null,
+    defaultEndTime || "17:00",
+    todayStatus?.gone_time || null
   );
 
+  const bugun = new Date();
 
-  
+  // Kun nomlarini olish uchun array
+  const kunlar = [
+    "Yakshanba",
+    "Dushanba",
+    "Seshanba",
+    "Chorshanba",
+    "Payshanba",
+    "Juma",
+    "Shanba",
+  ];
+
+  // Sana elementlarini olish
+  const yil = bugun.getFullYear();
+  const oy = bugun.getMonth() + 1; // getMonth() 0-based, shuning uchun 1 qo'shamiz
+  const kun = bugun.getDate();
+  const kunNomi = kunlar[bugun.getDay()];
+
+  const isToday = `${kunNomi}, ${kun}-${oy}-${yil}`;
+
   return (
-    <div className="p-4 flex flex-col justify-center md:justify-start md:p-10  main_page h-[100vh] text-center">
-      <h1 className="text-[3em] sm:text-[3em] md:text-[8em] font-bold text-white">
-        {currentTime}
-      </h1>
-      <h1 className="text-[1.5em] sm:text-[2em] font-bold mb-4 text-wrap text-white">
-        {user?.family_name} {user?.given_name} - {" "} {todayStatus?.arrivel_time} -  
-        <span className="text-3xl">{today}</span>
-      </h1>
-      {todayStatus && (
-        <div className="mb-4 mx-auto text-white lg:w-[900px] text-left grid lg:grid-cols-2 gap-4">
-          <p className={` py-2 px-5 rounded-md shadow-lg ${arrivalStatus.bg}`}>
-            <strong>Status:</strong>{" "}
-            <span className={arrivalStatus.color}>{arrivalStatus.status}</span>
-          </p>
-          <p className="bg-white text-black py-2 px-5 rounded-md shadow-lg">
-            <strong>Ish grafigi:</strong> {defaultStartTime} - {defaultEndTime}
-          </p>
-          <p className="bg-white text-black py-2 px-5 rounded-md shadow-lg">
-            <strong>Keldingiz:</strong>{" "}
-            {todayStatus.arrivel_time || "Hali kelmadingiz"}
-          </p>
-          <p className="bg-white text-black py-2 px-5 rounded-md shadow-lg">
-            <strong>Ketdingiz:</strong>{" "}
-            {todayStatus.gone_time || "Hali ketmadingiz"}
-          </p>
-          <p className="bg-white text-black py-2 px-5 rounded-md shadow-lg">
-            <strong>Ishlagan soati:</strong>{" "}
-            {todayStatus.ishlagan_soati ? (
-              <>{formatTime(todayStatus.ishlagan_soati)}</>
-            ) : (
-              "Hali ma'lumot yo'q"
-            )}
-          </p>
-        </div>
-      )}
+    <div className="p-4 flex flex-col justify-center md:justify-start md:p-10 main_page h-[100vh]">
+      <div
+        className={`mb-4 h-[40px] w-[95%] md:w-[30%] rounded-full bg-black text-white flex gap-5 fixed left-[50%] -translate-x-[50%] text-[12px] sm:text-sm top-5 items-center justify-center`}
+      >
+        <p className={`${arrivalStatus.color} flex items-center gap-2`}>
+          <ClockArrowDown size={18} />
+          {arrivalStatus.status}
+        </p>{" "}
+        <p className={`${arrivalStatus.color2} flex items-center gap-2`}>
+          <ClockArrowUp size={18} />
+          {arrivalStatus.status2}
+        </p>
+      </div>
+      <div className="flex flex-col items-center justify-center h-screen ">
+        <h1 className="text-[1.5em] sm:text-[2em] font-bold text-wrap flex items-center mx-auto">
+          {currentTime}
+        </h1>
+        {isToday}
+        <h1 className="text-[1.5em] sm:text-[3em] font-bold text-wrap flex items-center mx-auto">
+          Salom {user?.given_name}{" "}
+          <div className="w-[40px] h-[40px] md:w-[80px] md:h-[80px] relative">
+            <Image fill src="/hi.png" className="object-contain mb-2" alt="" />
+          </div>
+          {/* <span className="text-3xl">{today}</span> */}
+        </h1>
 
-      <div className="flex gap-3 mx-auto items-center justify-center">
-        <Button
-          className={`${
-            isArriveDisabled ? "bg-gray-600 cursor-not-allowed" : "bg-blue-600"
-          }`}
-          onClick={handleArrive}
-          disabled={isArriveDisabled || loading}
-        >
-          Keldim
-        </Button>
-        <Button
-          className={`${
-            isDepartDisabled ? "bg-gray-600 cursor-not-allowed" : "bg-red-600"
-          }`}
-          onClick={handleDepart}
-          disabled={isDepartDisabled || loading}
-        >
-          Ketdim
-        </Button>
+        <div className="my-5">
+          {!todayStatus?.arrivel_time ? (
+            <Button
+              className={`bg-blue-600 w-[200px] h-[200px] !rounded-full keldim_btn text-2xl`}
+              onClick={handleArrive}
+              disabled={loading}
+            >
+              Keldim
+            </Button>
+          ) : (
+            !todayStatus?.gone_time && (
+              <Button
+                className={`bg-red-600 w-[200px] h-[200px] !rounded-full ketdim_btn text-2xl`}
+                onClick={handleDepart}
+                disabled={loading}
+              >
+                Ketdim
+              </Button>
+            )
+          )}
+        </div>
+
+        <div className="mb-4 mx-auto flex gap-2 md:gap-5">
+          <div className=" text-black md:py-2 md:px-5 rounded-md w-[100px] md:w-[150px] text-center grid">
+            <div className="w-[30px] h-[30px] relative md:w-[50px] md:h-[50px] mx-auto mb-2">
+              <Image
+                fill
+                src="/1.png"
+                className="object-contain mb-2 mx-auto"
+                alt=""
+              />
+            </div>
+            <p className={arrivalStatus.color}>
+              {todayStatus?.arrivel_time || "--:--"}
+            </p>
+            <p>Keldingiz</p>
+          </div>
+          <div className=" text-black md:py-2 md:px-5 rounded-md w-[100px] md:w-[150px] text-center grid">
+            <div className="w-[30px] h-[30px] relative md:w-[50px] md:h-[50px] mx-auto mb-2">
+              <Image
+                fill
+                src="/2.png"
+                className="object-contain mb-2 mx-auto"
+                alt=""
+              />
+            </div>
+            <p className={arrivalStatus.color2}>
+              {todayStatus?.gone_time || "--:--"}
+            </p>
+            <p>Ketdingiz</p>
+          </div>
+          <div className=" text-black md:py-2 md:px-5 rounded-md w-[100px] md:w-[150px] text-center grid">
+            <div className="w-[30px] h-[30px] relative md:w-[50px] md:h-[50px] mx-auto mb-2">
+              <Image
+                fill
+                src="/3.png"
+                className="object-contain mb-2 mx-auto"
+                alt=""
+              />
+            </div>
+            <p>
+              {todayStatus?.ishlagan_soati ? (
+                <>{formatTime(todayStatus?.ishlagan_soati)}</>
+              ) : (
+                "--:--"
+              )}
+            </p>
+            <p>Ishlagan soat</p>
+          </div>
+        </div>
       </div>
     </div>
   );

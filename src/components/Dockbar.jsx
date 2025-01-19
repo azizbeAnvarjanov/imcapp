@@ -13,7 +13,7 @@ import {
 
 const Dockbar = ({ role }) => {
   return (
-    <div className="fixed bg-white bottom-10 p-3 md:p-4 border shadow-lg left-[50%] -translate-x-[50%] rounded-xl flex items-center gap-2 md:gap-4">
+    <div className="fixed bg-white bottom-5 p-3 md:p-4 border shadow-lg left-[50%] -translate-x-[50%] rounded-xl flex items-center gap-2 md:gap-4">
       {role ? (
         <>
           {role[0]?.name === "Admin" ? (
