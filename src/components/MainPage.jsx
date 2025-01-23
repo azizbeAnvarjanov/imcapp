@@ -375,4 +375,4 @@ const MainPage = ({ user }) => {
   );
 };
 
-export default withIpCheck(MainPage);
+export default MainPage;
