@@ -77,7 +77,7 @@ const CustomerFeedback = () => {
   };
 
   return (
-    <div className="p-6 max-w-[50%] mx-auto">
+    <div className="p-6 max-w-[50%] mx-auto pb-20">
       <h1 className="text-xl font-bold mb-4">Mijoz Fikr-Mulohazasi</h1>
       {questions.map((question, index) => (
         <div key={index} className="my-11">
