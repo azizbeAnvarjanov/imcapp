@@ -88,6 +88,8 @@ const AllAttendess = () => {
     const grafikVaqtMinutlarda = grafikSoat * 60 + grafikDaqiqa;
     const kelganVaqtMinutlarda = kelganSoat * 60 + kelganDaqiqa;
     const farq = kelganVaqtMinutlarda - grafikVaqtMinutlarda;
+    console.log(farq > 6);
+    
 
     if (farq > 0) {
       return {
@@ -211,14 +213,14 @@ const AllAttendess = () => {
                 const userAttendess =
                   attendess.find((a) => a.userId === user.id) || {};
                 const arrivalStatus = vaqtniTekshir(
-                  user.workSchedule?.defaultStartTime || "09:00",
+                  user.workSchedule?.defaultStartTime || "08:00",
                   userAttendess.arrivel_time || null
                 );
 
                 return (
                   <TableRow
                     key={user.id}
-                    className={arrivalStatus.bgColor}
+                    
                   >
                     <TableCell>{i + 1}</TableCell>
                     <TableCell>
@@ -231,7 +233,7 @@ const AllAttendess = () => {
                       {user.workSchedule?.defaultStartTime} -{" "}
                       {user.workSchedule?.defaultEndTime}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className={arrivalStatus.bgColor}>
                       {userAttendess.arrivel_time || "Hali kelmadi"}
                     </TableCell>
                     <TableCell>{userAttendess.gone_time || "-"}</TableCell>
