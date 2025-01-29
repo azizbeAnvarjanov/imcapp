@@ -310,19 +310,13 @@ const MainPage = ({ user }) => {
         <div className="my-5">
           {!todayStatus?.arrivel_time ? (
             <>
-              {dataLoading ? (
-                <></>
-              ) : (
-                <>
-                  <Button
-                    className={`bg-blue-600 w-[200px] h-[200px] !rounded-full keldim_btn text-2xl`}
-                    onClick={handleArrive}
-                    disabled={loading}
-                  >
-                    Keldim
-                  </Button>
-                </>
-              )}
+              <Button
+                className={`bg-blue-600 w-[200px] h-[200px] !rounded-full keldim_btn text-2xl`}
+                onClick={handleArrive}
+                disabled={loading}
+              >
+                Keldim
+              </Button>
             </>
           ) : (
             !todayStatus?.gone_time && (
