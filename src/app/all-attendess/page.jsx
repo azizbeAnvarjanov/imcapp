@@ -22,6 +22,8 @@ import { Input } from "@/components/ui/input";
 const AllAttendess = () => {
   const [users, setUsers] = useState([]);
   const [attendess, setAttendess] = useState([]);
+  console.log(attendess);
+
   const [selectedDate, setSelectedDate] = useState(
     new Date().toISOString().split("T")[0]
   );
@@ -30,15 +32,19 @@ const AllAttendess = () => {
 
   const fetchUsers = () => {
     const usersRef = collection(db, "users");
-    onSnapshot(usersRef, (snapshot) => {
-      const usersData = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-      setUsers(usersData);
-    }, (err) => {
-      setError("Foydalanuvchilarni olishda xato yuz berdi.");
-    });
+    onSnapshot(
+      usersRef,
+      (snapshot) => {
+        const usersData = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setUsers(usersData);
+      },
+      (err) => {
+        setError("Foydalanuvchilarni olishda xato yuz berdi.");
+      }
+    );
   };
 
   const fetchAttendess = (date) => {
@@ -46,17 +52,21 @@ const AllAttendess = () => {
     setError(null);
     const attendessRef = collection(db, "attendess");
     const q = query(attendessRef, where("date", "==", date));
-    onSnapshot(q, (snapshot) => {
-      const attendessData = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-      setAttendess(attendessData);
-      setLoading(false);
-    }, (err) => {
-      setError("Ma'lumotlarni olishda xato yuz berdi.");
-      setLoading(false);
-    });
+    onSnapshot(
+      q,
+      (snapshot) => {
+        const attendessData = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setAttendess(attendessData);
+        setLoading(false);
+      },
+      (err) => {
+        setError("Ma'lumotlarni olishda xato yuz berdi.");
+        setLoading(false);
+      }
+    );
   };
 
   const handleDateChange = (e) => {
@@ -88,8 +98,6 @@ const AllAttendess = () => {
     const grafikVaqtMinutlarda = grafikSoat * 60 + grafikDaqiqa;
     const kelganVaqtMinutlarda = kelganSoat * 60 + kelganDaqiqa;
     const farq = kelganVaqtMinutlarda - grafikVaqtMinutlarda;
-    console.log(farq > 6);
-    
 
     if (farq > 0) {
       return {
@@ -186,7 +194,7 @@ const AllAttendess = () => {
         <div
           className="overflow-x-auto rounded-lg overflow-hidden"
           id="table-content"
-        > 
+        >
           <Table className="table-auto border-collapse w-full overflow-x-scroll min-w-[1000px]">
             <TableHeader>
               <TableRow>
@@ -218,10 +226,7 @@ const AllAttendess = () => {
                 );
 
                 return (
-                  <TableRow
-                    key={user.id}
-                    
-                  >
+                  <TableRow key={user.id}>
                     <TableCell>{i + 1}</TableCell>
                     <TableCell>
                       <Link href={`/user/${user.id}`}>

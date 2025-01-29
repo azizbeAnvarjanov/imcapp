@@ -11,6 +11,7 @@ import {
   onSnapshot,
 } from "firebase/firestore";
 import withIpCheck from "../app/hoc/withIpCheck";
+import KettimModal from "@/components/KettimModal";
 import { db } from "../app/firebase";
 import { Button } from "@/components/ui/button";
 import { toast } from "react-hot-toast";
@@ -20,6 +21,8 @@ import { ClockArrowDown, ClockArrowUp } from "lucide-react";
 
 const MainPage = ({ user }) => {
   const [loading, setLoading] = useState(false);
+  const [dataLoading, setDataLoading] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
   const [todayStatus, setTodayStatus] = useState(null);
   const [currentTime, setCurrentTime] = useState("");
   const [defaultEndTime, setDefaultEndTime] = useState("");
@@ -111,6 +114,7 @@ const MainPage = ({ user }) => {
       });
 
       toast.success(`Bazaga ketish vaqti yozildi.`);
+      setIsOpen(false);
     } catch (error) {
       toast.error("Xato yuz berdi: " + error.message);
     } finally {
@@ -119,6 +123,7 @@ const MainPage = ({ user }) => {
   };
 
   const checkButtonState = () => {
+    setDataLoading(true);
     const attendessRef = collection(db, "attendess");
 
     try {
@@ -131,6 +136,7 @@ const MainPage = ({ user }) => {
       const unsubscribe = onSnapshot(q, (snapshot) => {
         if (!snapshot.empty) {
           setTodayStatus(snapshot.docs[0].data());
+          setDataLoading(false);
         } else {
           setTodayStatus(null);
         }
@@ -148,14 +154,15 @@ const MainPage = ({ user }) => {
   };
 
   const getuserTimes = async () => {
+    setDataLoading(true);
     const data = await GetUserWorkSchedule(user.id);
     setDefaultEndTime(data?.defaultEndTime);
     setDefaultStartTime(data?.defaultStartTime);
   };
 
   useEffect(() => {
-    getuserTimes();
     checkButtonState();
+    getuserTimes();
     updateCurrentTime();
     const interval = setInterval(updateCurrentTime, 1000);
     return () => clearInterval(interval);
@@ -302,22 +309,31 @@ const MainPage = ({ user }) => {
 
         <div className="my-5">
           {!todayStatus?.arrivel_time ? (
-            <Button
-              className={`bg-blue-600 w-[200px] h-[200px] !rounded-full keldim_btn text-2xl`}
-              onClick={handleArrive}
-              disabled={loading}
-            >
-              Keldim
-            </Button>
+            <>
+              {dataLoading ? (
+                <></>
+              ) : (
+                <>
+                  <Button
+                    className={`bg-blue-600 w-[200px] h-[200px] !rounded-full keldim_btn text-2xl`}
+                    onClick={handleArrive}
+                    disabled={loading}
+                  >
+                    Keldim
+                  </Button>
+                </>
+              )}
+            </>
           ) : (
             !todayStatus?.gone_time && (
-              <Button
-                className={`bg-red-600 w-[200px] h-[200px] !rounded-full ketdim_btn text-2xl`}
-                onClick={handleDepart}
-                disabled={loading}
-              >
-                Ketdim
-              </Button>
+              <div>
+                <KettimModal
+                  handleDepart={handleDepart}
+                  loading={loading}
+                  isOpen={isOpen}
+                  setIsOpen={setIsOpen}
+                />
+              </div>
             )
           )}
         </div>
@@ -367,7 +383,7 @@ const MainPage = ({ user }) => {
                 "--:--"
               )}
             </p>
-            <p>Ishlagan soat</p>
+            <p>Ishlagan soat </p>
           </div>
         </div>
       </div>

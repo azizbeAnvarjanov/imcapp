@@ -183,6 +183,9 @@ const MyAttendess = ({ currentUser }) => {
     }
   };
 
+  console.log(attendess);
+  
+
   return (
     <div className="p-6">
       <h1 className="text-xl font-bold mb-4">Mening Hisobotlarim</h1>
@@ -241,6 +244,9 @@ const MyAttendess = ({ currentUser }) => {
                   <strong>№</strong>
                 </TableCell>
                 <TableCell className="bg-gray-400">
+                  <strong>id</strong>
+                </TableCell>
+                <TableCell className="bg-gray-400">
                   <strong>Sana</strong>
                 </TableCell>
                 <TableCell className="bg-gray-400">
@@ -266,6 +272,7 @@ const MyAttendess = ({ currentUser }) => {
                 return (
                   <TableRow key={record.id} className={arrivalStatus.bgColor}>
                     <TableCell>{i + 1 || "-"}</TableCell>
+                    <TableCell>{record.id || "-"}</TableCell>
                     <TableCell>{record.date || "-"}</TableCell>
                     <TableCell>{record.arrivel_time || "-"}</TableCell>
                     <TableCell>{record.gone_time || "-"}</TableCell>
