@@ -62,6 +62,12 @@ const Dockbar = ({ role, user }) => {
               >
                 <CircleUserRound />
               </Link>
+              <Link
+                className="h-[38px] border w-[38px] md:w-[50px] md:h-[50px] rounded-lg flex items-center justify-center hover:-translate-y-3 hover:shadow-lg transition-all"
+                href="/kassa"
+              >
+                <Wallet />
+              </Link>
             </>
           ) : (
             <>
@@ -78,7 +84,7 @@ const Dockbar = ({ role, user }) => {
               >
                 <CalendarCheck />
               </Link>
-              {user?.email === "aanvarjanov5@gmail.com" && (
+              {user?.email === "imamaliyevaaziza0@gmail.com" && (
                 <>
                   <Link
                     className="h-[38px] border w-[38px] md:w-[50px] md:h-[50px] rounded-lg flex items-center justify-center hover:-translate-y-3 hover:shadow-lg transition-all"
