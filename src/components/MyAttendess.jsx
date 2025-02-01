@@ -184,7 +184,6 @@ const MyAttendess = ({ currentUser }) => {
   };
 
   console.log(attendess);
-  
 
   return (
     <div className="p-6">
@@ -237,7 +236,10 @@ const MyAttendess = ({ currentUser }) => {
           className="overflow-x-auto rounded-lg overflow-hidden"
           id="table-content"
         >
-          <Table ref={tableRef} className="w-full overflow-x-scroll min-w-[800px]">
+          <Table
+            ref={tableRef}
+            className="w-full overflow-x-scroll min-w-[800px]"
+          >
             <TableHeader>
               <TableRow>
                 <TableCell className="bg-gray-400">

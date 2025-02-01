@@ -23,6 +23,7 @@ export const metadata = {
 
 export default async function RootLayout({ children }) {
   const role = await GetRoles();
+  const user = await GetUserFS();
   return (
     <AuthProvider>
       <html lang="en">
@@ -32,7 +33,7 @@ export default async function RootLayout({ children }) {
           <Toaster position="bottom-right" reverseOrder={false} />
           <div>{children}</div>
 
-          <Dockbar role={role} />
+          <Dockbar role={role} user={user} />
         </body>
       </html>
     </AuthProvider>
