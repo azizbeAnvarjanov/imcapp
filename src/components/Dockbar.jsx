@@ -11,6 +11,7 @@ import {
   ListTodo,
   DollarSign,
   Wallet,
+  BookMarked,
 } from "lucide-react";
 
 const Dockbar = ({ role, user }) => {
@@ -91,6 +92,12 @@ const Dockbar = ({ role, user }) => {
                     href="/kassa"
                   >
                     <Wallet />
+                  </Link>
+                  <Link
+                    className="h-[38px] border w-[38px] md:w-[50px] md:h-[50px] rounded-lg flex items-center justify-center hover:-translate-y-3 hover:shadow-lg transition-all"
+                    href="/hisobotlarim"
+                  >
+                    <BookMarked />
                   </Link>
                 </>
               )}
