@@ -1,57 +1,120 @@
 "use client";
-import React, { useEffect, useState } from "react";
-import { collection, onSnapshot } from "firebase/firestore";
+import { useState, useEffect } from "react";
 import { db } from "../firebase";
+import {
+  collection,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+  doc,
+  query,
+  where,
+  getDocs,
+} from "firebase/firestore";
+import { Bar } from "react-chartjs-2";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+} from "chart.js";
+import { RashodDiagram } from "@/components/diagrams/RashodDiagram";
 
-const Dashboard = () => {
-  const [feedbackStats, setFeedbackStats] = useState({});
-  const [feedbackList, setFeedbackList] = useState([]);
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+);
+
+export default function ExpensePage() {
+  const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
+  const [expenses, setExpenses] = useState([]);
+  const [monthlyData, setMonthlyData] = useState([]);
 
   useEffect(() => {
-    const unsubscribe = onSnapshot(
-      collection(db, "customerFeedback"),
-      (snapshot) => {
-        const feedbackData = snapshot.docs.map((doc) => doc.data());
-        setFeedbackList(feedbackData);
+    fetchExpenses(date);
+    fetchMonthlyData();
+  }, [date]);
 
-        const stats = {};
-        feedbackData.forEach(({ selectedOptions }) => {
-          for (const questionIndex in selectedOptions) {
-            const { question, option } = selectedOptions[questionIndex];
-            stats[question] = stats[question] || {};
-            stats[question][option] = (stats[question][option] || 0) + 1;
-          }
-        });
-        setFeedbackStats(stats);
-      }
+  const fetchExpenses = async (selectedDate) => {
+    const q = query(
+      collection(db, "expenses"),
+      where("date", "==", selectedDate)
     );
+    const querySnapshot = await getDocs(q);
+    const data = querySnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+    setExpenses(data);
+  };
 
-    return () => unsubscribe();
-  }, []);
+  const fetchMonthlyData = async () => {
+    const expensesSnapshot = await getDocs(collection(db, "expenses"));
+    const incomeSnapshot = await getDocs(collection(db, "hisobotlar"));
+
+    const expensesData = expensesSnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+    const incomeData = incomeSnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+
+    const monthlyDataMap = {};
+
+    expensesData.forEach((expense) => {
+      const expenseDate = new Date(expense.date);
+      const monthKey = expenseDate.getMonth();
+      if (!monthlyDataMap[monthKey]) {
+        monthlyDataMap[monthKey] = { month: monthKey, expenses: 0, income: 0 };
+      }
+      monthlyDataMap[monthKey].expenses += expense.amount;
+    });
+
+    incomeData.forEach((income) => {
+      const incomeDate = new Date(income.timestamp);
+      const monthKey = incomeDate.getMonth();
+      if (!monthlyDataMap[monthKey]) {
+        monthlyDataMap[monthKey] = { month: monthKey, expenses: 0, income: 0 };
+      }
+      monthlyDataMap[monthKey].income += income.umumiyTushum;
+    });
+
+    setMonthlyData(Object.values(monthlyDataMap));
+  };
+
+  const chartData = {
+    labels: monthlyData.map((data) =>
+      new Date(2024, data.month, 1).toLocaleString("default", { month: "long" })
+    ),
+    datasets: [
+      {
+        label: "Rashodlar",
+        data: monthlyData.map((data) => data.expenses),
+        backgroundColor: "red",
+      },
+      {
+        label: "Tushumlar",
+        data: monthlyData.map((data) => data.income),
+        backgroundColor: "green",
+      },
+    ],
+  };
 
   return (
-    <div className="p-6">
-      <h1 className="text-xl font-bold mb-4">Fikr-Mulohaza Statistikasi</h1>
-      {Object.keys(feedbackStats).map((question) => (
-        <div key={question} className="mb-4">
-          <p>
-            <strong>{question}</strong>
-          </p>
-          {Object.keys(feedbackStats[question]).map((option) => (
-            <p key={option}>
-              {option}: {feedbackStats[question][option]}
-            </p>
-          ))}
-        </div>
-      ))}
-      <h2 className="text-lg font-bold mb-2">Mijozlar Fikrlari:</h2>
-      {feedbackList.map((feedback, index) => (
-        <p key={index} className="mb-2">
-          {feedback.customerFeedback}
-        </p>
-      ))}
+    <div className="flex gap-4 p-4">
+      <div className="w-[800px] border h-[800px]">
+        <Bar data={chartData} />
+      </div>
+      <div></div>
     </div>
   );
-};
-
-export default Dashboard;
+}
