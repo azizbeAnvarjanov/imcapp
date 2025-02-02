@@ -12,6 +12,7 @@ import {
   DollarSign,
   Wallet,
   BookMarked,
+  CircleDollarSign,
 } from "lucide-react";
 
 const Dockbar = ({ role, user }) => {
@@ -63,11 +64,24 @@ const Dockbar = ({ role, user }) => {
               >
                 <CircleUserRound />
               </Link>
+              <hr />
               <Link
                 className="h-[38px] border w-[38px] md:w-[50px] md:h-[50px] rounded-lg flex items-center justify-center hover:-translate-y-3 hover:shadow-lg transition-all"
                 href="/kassa"
               >
                 <Wallet />
+              </Link>
+              <Link
+                className="h-[38px] border w-[38px] md:w-[50px] md:h-[50px] rounded-lg flex items-center justify-center hover:-translate-y-3 hover:shadow-lg transition-all"
+                href="/hisobotlarim"
+              >
+                <BookMarked />
+              </Link>
+              <Link
+                className="h-[38px] border w-[38px] md:w-[50px] md:h-[50px] rounded-lg flex items-center justify-center hover:-translate-y-3 hover:shadow-lg transition-all"
+                href="/rashodlar"
+              >
+                <CircleDollarSign />
               </Link>
             </>
           ) : (
@@ -87,6 +101,7 @@ const Dockbar = ({ role, user }) => {
               </Link>
               {user?.email === "imamaliyevaaziza0@gmail.com" && (
                 <>
+                  <hr />
                   <Link
                     className="h-[38px] border w-[38px] md:w-[50px] md:h-[50px] rounded-lg flex items-center justify-center hover:-translate-y-3 hover:shadow-lg transition-all"
                     href="/kassa"
@@ -98,6 +113,12 @@ const Dockbar = ({ role, user }) => {
                     href="/hisobotlarim"
                   >
                     <BookMarked />
+                  </Link>
+                  <Link
+                    className="h-[38px] border w-[38px] md:w-[50px] md:h-[50px] rounded-lg flex items-center justify-center hover:-translate-y-3 hover:shadow-lg transition-all"
+                    href="/rashodlar"
+                  >
+                    <CircleDollarSign />
                   </Link>
                 </>
               )}
