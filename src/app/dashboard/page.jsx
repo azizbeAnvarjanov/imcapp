@@ -21,7 +21,6 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
-import { RashodDiagram } from "@/components/diagrams/RashodDiagram";
 
 ChartJS.register(
   CategoryScale,
