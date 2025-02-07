@@ -104,10 +104,11 @@ const MyAttendess = ({ currentUser }) => {
 
   const exportToPDF = () => {
     const doc = new jsPDF();
-    doc.text("Mening Hisobotlarim", 14, 10);
+    doc.text(`${currentUser.surname} ${currentUser.name}`, 14, 10);
     doc.autoTable({
-      head: [["Sana", "Kelgan Vaqti", "Ketgan Vaqti", "Ishlagan Soati"]],
-      body: attendess.map((record) => [
+      head: [["№", "Sana", "Kelgan Vaqti", "Ketgan Vaqti", "Ishlagan Soati"]],
+      body: attendess.map((record, idx) => [
+        idx + 1 || "-",
         record.date || "-",
         record.arrivel_time || "-",
         record.gone_time || "-",
@@ -119,7 +120,7 @@ const MyAttendess = ({ currentUser }) => {
       14,
       doc.lastAutoTable.finalY + 10
     );
-    doc.save("Mening-Hisobotlarim.pdf");
+    doc.save(`${currentUser.surname} ${currentUser.name}.pdf`);
   };
 
   const exportToExcel = () => {
@@ -152,6 +153,8 @@ const MyAttendess = ({ currentUser }) => {
     return `${hours} soat ${minutes} daqiqa ${seconds} soniya`;
   };
 
+  let umumiyKechQolishMinutlarda = 0;
+
   const vaqtniTekshir = (grafikVaqti, kelganVaqti) => {
     if (!kelganVaqti) {
       return {
@@ -165,6 +168,7 @@ const MyAttendess = ({ currentUser }) => {
     const kelganVaqtMinutlarda = kelganSoat * 60 + kelganDaqiqa;
     const farq = kelganVaqtMinutlarda - grafikVaqtMinutlarda;
 
+    umumiyKechQolishMinutlarda += farq; // Umumiy kech qolish vaqtiga qo‘shamiz
     if (farq > 0) {
       return {
         status: `${formatTime(farq * 60)} kech qoldingiz.`,
@@ -183,7 +187,14 @@ const MyAttendess = ({ currentUser }) => {
     }
   };
 
-  console.log(attendess);
+  // Umumiy kech qolish vaqtini olish uchun funksiya
+  const umumiyKechQolish = () => {
+    const soat = Math.floor(umumiyKechQolishMinutlarda / 60);
+    const daqiqa = umumiyKechQolishMinutlarda % 60;
+    return `Umumiy kech qolish vaqti: ${soat} soat ${daqiqa} daqiqa`;
+  };
+  console.log(umumiyKechQolish());
+  console.log(umumiyKechQolishMinutlarda);
 
   return (
     <div className="p-6">
@@ -218,14 +229,6 @@ const MyAttendess = ({ currentUser }) => {
           <Printer />
         </Button>
       </div>
-      <div className="mb-4">
-        <p className="flex gap-2 items-center">
-          <strong className="flex gap-2 items-center">
-            Umumiy ishlagan vaqt:
-          </strong>
-          {loading ? "Hisoblanmoqda..." : `${formatTime(totalHours)}`}
-        </p>
-      </div>
 
       {loading ? (
         <div className="text-center">Yuklanmoqda...</div>
@@ -236,6 +239,15 @@ const MyAttendess = ({ currentUser }) => {
           className="overflow-x-auto rounded-lg overflow-hidden"
           id="table-content"
         >
+          <div className="mb-4">
+            <p className="flex gap-2 items-center">
+              <strong className="flex gap-2 items-center">
+                Umumiy ishlagan vaqt:
+              </strong>
+              {loading ? "Hisoblanmoqda..." : `${formatTime(totalHours)}`}
+            </p>
+          </div>
+
           <Table
             ref={tableRef}
             className="w-full overflow-x-scroll min-w-[800px]"
@@ -269,13 +281,15 @@ const MyAttendess = ({ currentUser }) => {
               {attendess.map((record, i) => {
                 const arrivalStatus = vaqtniTekshir(
                   workSchedule?.defaultStartTime || "09:00",
-                  record.arrivel_time || null
+                  record?.arrivel_time || null
                 );
                 return (
-                  <TableRow key={record.id} className={arrivalStatus.bgColor}>
+                  <TableRow key={record.id}>
                     <TableCell>{i + 1 || "-"}</TableCell>
                     <TableCell>{record.id || "-"}</TableCell>
-                    <TableCell>{record.date || "-"}</TableCell>
+                    <TableCell className={arrivalStatus.bgColor}>
+                      {record.date || "-"}
+                    </TableCell>
                     <TableCell>{record.arrivel_time || "-"}</TableCell>
                     <TableCell>{record.gone_time || "-"}</TableCell>
                     <TableCell>
